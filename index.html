@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 MindCare - Mental Health & Wellness</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🧠 MindCare</div>
+            <ul class="nav-links">
+                <li><a href="#home" class="nav-link active" onclick="showSection('home')">Home</a></li>
+                <li><a href="#mood-tracker" class="nav-link" onclick="showSection('mood-tracker')">Mood Tracker</a></li>
+                <li><a href="#journal" class="nav-link" onclick="showSection('journal')">Journal</a></li>
+                <li><a href="#chatbot" class="nav-link" onclick="showSection('chatbot')">Chat Support</a></li>
+                <li><a href="#meditation" class="nav-link" onclick="showSection('meditation')">Meditation</a></li>
+                <li><a href="#resources" class="nav-link" onclick="showSection('resources')">Resources</a></li>
+                <li><a href="#feedback" class="nav-link" onclick="showSection('feedback')">Feedback</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="section active">
+        <div class="container">
+            <div class="hero">
+                <h1 class="hero-title">Welcome to MindCare</h1>
+                <p class="hero-subtitle">Your personal mental health companion for peace, growth, and wellness</p>
+                <p class="hero-description">Track your mood, journal your thoughts, chat with our AI support bot, meditate mindfully, and access mental health resources—all in one place.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card" onclick="showSection('mood-tracker')">
+                    <div class="feature-icon">📊</div>
+                    <h3>Mood Tracker</h3>
+                    <p>Monitor your emotional patterns and understand your mental health journey over time.</p>
+                </div>
+
+                <div class="feature-card" onclick="showSection('journal')">
+                    <div class="feature-icon">📔</div>
+                    <h3>Journal</h3>
+                    <p>Express yourself freely with our private journaling space for reflection and growth.</p>
+                </div>
+
+                <div class="feature-card" onclick="showSection('chatbot')">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI Chat Support</h3>
+                    <p>Talk to our intelligent chatbot for instant support and helpful guidance.</p>
+                </div>
+
+                <div class="feature-card" onclick="showSection('meditation')">
+                    <div class="feature-icon">🧘</div>
+                    <h3>Meditation</h3>
+                    <p>Guided meditations and breathing exercises to calm your mind and reduce stress.</p>
+                </div>
+
+                <div class="feature-card" onclick="showSection('resources')">
+                    <div class="feature-icon">📚</div>
+                    <h3>Resources</h3>
+                    <p>Access helpful mental health information and support resources.</p>
+                </div>
+
+                <div class="feature-card" onclick="showSection('feedback')">
+                    <div class="feature-icon">💬</div>
+                    <h3>Feedback</h3>
+                    <p>Share your thoughts and help us improve MindCare for you.</p>
+                </div>
+            </div>
+
+            <div class="wellness-tips">
+                <h2>Daily Wellness Tips</h2>
+                <div class="tips-carousel">
+                    <div class="tip">
+                        <strong>💧 Stay Hydrated</strong>
+                        <p>Drink water throughout the day. Proper hydration supports mental clarity and emotional stability.</p>
+                    </div>
+                    <div class="tip">
+                        <strong>🌅 Morning Routine</strong>
+                        <p>Start your day with intention. A simple 5-minute routine can set a positive tone.</p>
+                    </div>
+                    <div class="tip">
+                        <strong>🚶 Take Breaks</strong>
+                        <p>Step away from screens. A short walk can refresh your mind and boost mood.</p>
+                    </div>
+                    <div class="tip">
+                        <strong>😴 Sleep Well</strong>
+                        <p>Prioritize 7-9 hours of quality sleep. Sleep is crucial for mental health recovery.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mood Tracker Section -->
+    <section id="mood-tracker" class="section">
+        <div class="container">
+            <h2>Mood Tracker</h2>
+            <p class="section-subtitle">Check in with yourself and track your emotional patterns</p>
+
+            <div class="mood-selector">
+                <p class="mood-label">How are you feeling today?</p>
+                <div class="mood-buttons">
+                    <button class="mood-btn" onclick="addMood('😢', 'Very Bad')">
+                        <span class="mood-emoji">😢</span>
+                        <span>Very Bad</span>
+                    </button>
+                    <button class="mood-btn" onclick="addMood('😟', 'Bad')">
+                        <span class="mood-emoji">😟</span>
+                        <span>Bad</span>
+                    </button>
+                    <button class="mood-btn" onclick="addMood('😐', 'Neutral')">
+                        <span class="mood-emoji">😐</span>
+                        <span>Neutral</span>
+                    </button>
+                    <button class="mood-btn" onclick="addMood('🙂', 'Good')">
+                        <span class="mood-emoji">🙂</span>
+                        <span>Good</span>
+                    </button>
+                    <button class="mood-btn" onclick="addMood('😄', 'Great')">
+                        <span class="mood-emoji">😄</span>
+                        <span>Great</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mood-details">
+                <label for="mood-note">Add a note (optional):</label>
+                <textarea id="mood-note" placeholder="What triggered this mood? Any thoughts?"></textarea>
+                <button class="btn-primary" onclick="saveMoodEntry()">Save Entry</button>
+            </div>
+
+            <div class="mood-history">
+                <h3>Mood History</h3>
+                <div id="mood-log" class="mood-log">
+                    <p class="empty-state">No mood entries yet. Start tracking to see patterns!</p>
+                </div>
+            </div>
+
+            <div class="mood-stats">
+                <h3>Mood Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <p class="stat-label">Most Common Mood</p>
+                        <p class="stat-value" id="common-mood">—</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Total Entries</p>
+                        <p class="stat-value" id="total-entries">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Current Streak</p>
+                        <p class="stat-value" id="current-streak">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Journal Section -->
+    <section id="journal" class="section">
+        <div class="container">
+            <h2>Personal Journal</h2>
+            <p class="section-subtitle">A safe space to express your thoughts and feelings</p>
+
+            <div class="journal-editor">
+                <input type="text" id="journal-title" class="journal-title-input" placeholder="Give your entry a title...">
+                <textarea id="journal-content" class="journal-textarea" placeholder="Write your thoughts, feelings, and experiences here... Whatever is on your mind."></textarea>
+                <button class="btn-primary" onclick="saveJournalEntry()">Save Journal Entry</button>
+            </div>
+
+            <div class="journal-entries">
+                <h3>Your Entries</h3>
+                <div id="journal-log" class="journal-log">
+                    <p class="empty-state">No journal entries yet. Start writing to begin your journey of self-discovery!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chatbot Section -->
+    <section id="chatbot" class="section">
+        <div class="container">
+            <h2>AI Chat Support</h2>
+            <p class="section-subtitle">Talk to our intelligent chatbot for instant support</p>
+
+            <div class="chatbot-container">
+                <div class="chat-box">
+                    <div id="chat-messages" class="chat-messages">
+                        <div class="chat-message bot-message">
+                            <p>👋 Hi! I'm MindCare Bot. I'm here to help answer your questions about mental health, wellness, and more. How can I assist you today?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Ask me anything..." onkeypress="handleChatKeypress(event)">
+                    <button class="btn-primary" onclick="sendChatMessage()">Send</button>
+                </div>
+
+                <div class="chat-history">
+                    <h3>Recent Conversations</h3>
+                    <div id="chat-history-log" class="chat-history-log">
+                        <p class="empty-state">No conversations yet. Start chatting!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Meditation Section -->
+    <section id="meditation" class="section">
+        <div class="container">
+            <h2>Meditation & Breathing</h2>
+            <p class="section-subtitle">Find peace and calm with guided exercises</p>
+
+            <div class="meditation-selector">
+                <h3>Choose a Meditation</h3>
+                <div class="meditation-cards">
+                    <div class="med-card" onclick="startMeditation('breathing', '4-7-8 Breathing Exercise', 'A calming breathing technique: inhale for 4, hold for 7, exhale for 8.')">
+                        <div class="med-icon">🌬️</div>
+                        <h4>Breathing Exercise</h4>
+                        <p>4-7-8 Breathing Technique</p>
+                        <span class="duration">5 min</span>
+                    </div>
+
+                    <div class="med-card" onclick="startMeditation('body-scan', 'Body Scan Meditation', 'Progressive relaxation: focus on each part of your body from head to toe.')">
+                        <div class="med-icon">🧘</div>
+                        <h4>Body Scan</h4>
+                        <p>Progressive Relaxation</p>
+                        <span class="duration">10 min</span>
+                    </div>
+
+                    <div class="med-card" onclick="startMeditation('mindfulness', 'Mindfulness Meditation', 'Be present in the moment. Notice thoughts and feelings without judgment.')">
+                        <div class="med-icon">🌟</div>
+                        <h4>Mindfulness</h4>
+                        <p>Present Moment Awareness</p>
+                        <span class="duration">8 min</span>
+                    </div>
+
+                    <div class="med-card" onclick="startMeditation('loving-kindness', 'Loving-Kindness Meditation', 'Cultivate compassion for yourself and others through this heart-centered practice.')">
+                        <div class="med-icon">💚</div>
+                        <h4>Loving-Kindness</h4>
+                        <p>Compassion Practice</p>
+                        <span class="duration">10 min</span>
+                    </div>
+
+                    <div class="med-card" onclick="startMeditation('sleep', 'Sleep Meditation', 'Prepare your mind and body for restful sleep with this calming guidance.')">
+                        <div class="med-icon">😴</div>
+                        <h4>Sleep Meditation</h4>
+                        <p>Before Bedtime</p>
+                        <span class="duration">15 min</span>
+                    </div>
+
+                    <div class="med-card" onclick="startMeditation('stress-relief', 'Stress Relief', 'Release tension and anxiety with this targeted stress-reduction exercise.')">
+                        <div class="med-icon">😌</div>
+                        <h4>Stress Relief</h4>
+                        <p>Anxiety Reduction</p>
+                        <span class="duration">7 min</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="meditation-player" class="meditation-player" style="display: none;">
+                <button class="close-btn" onclick="closeMeditation()">&times;</button>
+                <div class="player-content">
+                    <h3 id="meditation-title"></h3>
+                    <div class="meditation-circle">
+                        <div class="circle-inner">
+                            <p id="meditation-instruction"></p>
+                        </div>
+                    </div>
+                    <div class="player-controls">
+                        <button class="btn-primary" onclick="playMeditation()">Start</button>
+                        <button class="btn-secondary" onclick="pauseMeditation()">Pause</button>
+                        <button class="btn-secondary" onclick="closeMeditation()">End</button>
+                    </div>
+                    <div class="timer">
+                        <span id="meditation-timer">5:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Resources Section -->
+    <section id="resources" class="section">
+        <div class="container">
+            <h2>Mental Health Resources</h2>
+            <p class="section-subtitle">Information and support to help you on your mental health journey</p>
+
+            <div class="resources-grid">
+                <div class="resource-card">
+                    <h3>🆘 Crisis Support</h3>
+                    <p><strong>National Suicide Prevention Lifeline:</strong> 988 (US)</p>
+                    <p>Available 24/7. Free and confidential.</p>
+                    <a href="tel:988" class="resource-link">Call Now</a>
+                </div>
+
+                <div class="resource-card">
+                    <h3>💬 Crisis Text Line</h3>
+                    <p><strong>Text HOME to 741741</strong> (US)</p>
+                    <p>Free crisis counseling via text message.</p>
+                    <button class="resource-link" onclick="copyToClipboard('741741')">Copy Number</button>
+                </div>
+
+                <div class="resource-card">
+                    <h3>🌍 International Support</h3>
+                    <p>Findinghelp.org maintains a directory of crisis resources worldwide.</p>
+                    <a href="#" class="resource-link">Find Your Country</a>
+                </div>
+
+                <div class="resource-card">
+                    <h3>📚 Mental Health Education</h3>
+                    <ul class="resource-list">
+                        <li>Understanding anxiety and depression</li>
+                        <li>Stress management techniques</li>
+                        <li>Sleep hygiene tips</li>
+                        <li>Building healthy relationships</li>
+                    </ul>
+                </div>
+
+                <div class="resource-card">
+                    <h3>🏥 Professional Help</h3>
+                    <p>Finding a therapist or counselor:</p>
+                    <ul class="resource-list">
+                        <li>Psychology Today (therapist finder)</li>
+                        <li>TherapyDen</li>
+                        <li>BetterHelp (online therapy)</li>
+                        <li>Your primary care doctor</li>
+                    </ul>
+                </div>
+
+                <div class="resource-card">
+                    <h3>💪 Self-Care Tips</h3>
+                    <ul class="resource-list">
+                        <li>Exercise regularly (30 min/day)</li>
+                        <li>Maintain a consistent sleep schedule</li>
+                        <li>Eat nutritious meals</li>
+                        <li>Practice gratitude daily</li>
+                        <li>Stay socially connected</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="important-note">
+                <h3>⚠️ Important Reminder</h3>
+                <p>MindCare is a tool for self-reflection and wellness, not a replacement for professional mental health treatment. If you're struggling, please reach out to a mental health professional or crisis line.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feedback Section -->
+    <section id="feedback" class="section">
+        <div class="container">
+            <h2>Feedback & Suggestions</h2>
+            <p class="section-subtitle">Help us improve MindCare by sharing your thoughts</p>
+
+            <div class="feedback-container">
+                <div class="feedback-form">
+                    <h3>Share Your Feedback</h3>
+                    <form onsubmit="submitFeedback(event)">
+                        <div class="form-group">
+                            <label for="feedback-name">Name:</label>
+                            <input type="text" id="feedback-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="feedback-email">Email:</label>
+                            <input type="email" id="feedback-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="feedback-message">Your Feedback:</label>
+                            <textarea id="feedback-message" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="feedback-rating">Rate Your Experience (1-5):</label>
+                            <div class="rating-stars">
+                                <input type="radio" name="rating" value="1" id="star1"><label for="star1">⭐</label>
+                                <input type="radio" name="rating" value="2" id="star2"><label for="star2">⭐⭐</label>
+                                <input type="radio" name="rating" value="3" id="star3" checked><label for="star3">⭐⭐⭐</label>
+                                <input type="radio" name="rating" value="4" id="star4"><label for="star4">⭐⭐⭐⭐</label>
+                                <input type="radio" name="rating" value="5" id="star5"><label for="star5">⭐⭐⭐⭐⭐</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">Submit Feedback</button>
+                    </form>
+                </div>
+
+                <div class="app-feelings-form">
+                    <h3>How Do You Feel About MindCare?</h3>
+                    <form onsubmit="submitAppFeelings(event)">
+                        <div class="form-group">
+                            <label>Has MindCare been helpful?</label>
+                            <div class="radio-group">
+                                <input type="radio" name="helpful" value="yes" id="helpful-yes"><label for="helpful-yes">Yes, very helpful!</label>
+                                <input type="radio" name="helpful" value="no" id="helpful-no"><label for="helpful-no">Not really</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="favorite-feature">What's your favorite feature?</label>
+                            <select id="favorite-feature">
+                                <option value="">Select a feature...</option>
+                                <option value="mood-tracker">Mood Tracker</option>
+                                <option value="journal">Journal</option>
+                                <option value="chatbot">AI Chat Bot</option>
+                                <option value="meditation">Meditation</option>
+                                <option value="resources">Resources</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="improve-text">What could we improve?</label>
+                            <textarea id="improve-text"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Will you continue using MindCare?</label>
+                            <div class="radio-group">
+                                <input type="radio" name="continue" value="yes" id="continue-yes" checked><label for="continue-yes">Yes</label>
+                                <input type="radio" name="continue" value="maybe" id="continue-maybe"><label for="continue-maybe">Maybe</label>
+                                <input type="radio" name="continue" value="no" id="continue-no"><label for="continue-no">No</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 MindCare. Your mental health matters. 🧠💚</p>
+        <p>Remember: It's okay to not be okay. Seeking help is a sign of strength.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
