@@ -1,0 +1,54 @@
+wellness_care:
+- How can I help you with your mental health today?
+- I'm here to support your wellness journey
+- Let's talk about your feelings
+
+anxiety:
+- Take deep breaths. Try inhaling for 4 counts and exhaling for 4 counts
+- Anxiety is temporary. It will pass
+- Try grounding yourself: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste
+
+stress:
+- It's okay to feel stressed. Have you tried taking a break?
+- Consider doing something you enjoy to reduce stress
+- Exercise can help reduce stress significantly
+
+depression:
+- I'm sorry you're feeling this way. Please reach out to someone you trust
+- Depression is treatable. Consider talking to a professional
+- You are not alone in this. Many people experience depression
+
+sleep:
+- Establish a consistent sleep schedule
+- Try avoiding screens 1 hour before bed
+- Deep breathing exercises can help you fall asleep
+
+self_care:
+- Self-care is important. What activities bring you joy?
+- Have you been taking care of your physical health?
+- Remember to be kind to yourself
+
+relationships:
+- Open communication is key in relationships
+- It's important to set healthy boundaries
+- Consider expressing your feelings honestly and calmly
+
+motivation:
+- You are capable of achieving your goals
+- Progress over perfection. Small steps count
+- Remember why you started. You've got this!
+
+gratitude:
+- What are three things you're grateful for today?
+- Gratitude can shift your perspective positively
+- Appreciating small things can boost your mood
+
+coping:
+- What coping strategies work best for you?
+- Journaling, meditation, or talking to someone can help
+- It's okay to ask for help when you need it
+
+emergency:
+- If you're in crisis, please call 988 (Suicide & Crisis Lifeline)
+- Text HOME to 741741 for Crisis Text Line
+- Your life has value. Help is available 24/7
