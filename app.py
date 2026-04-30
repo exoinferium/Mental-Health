@@ -4,7 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import numpy as np
 import tensorflow as tf
-import random
 import nltk
 from nltk.stem.lancaster import LancasterStemmer
 import string
@@ -13,135 +12,117 @@ import os
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mental_health.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JSON_SORT_KEYS'] = False
-
-# Initialize extensions
-db = SQLAlchemy(app)
 CORS(app)
+
+# Database configuration
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "mindcare.db")}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
 
 # ============ DATABASE MODELS ============
 
 class MoodEntry(db.Model):
-    __tablename__ = 'mood_entries'
     id = db.Column(db.Integer, primary_key=True)
-    emoji = db.Column(db.String(10), nullable=False)
-    label = db.Column(db.String(50), nullable=False)
+    emoji = db.Column(db.String(10))
+    label = db.Column(db.String(50))
     note = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    date = db.Column(db.String(50))
-
+    
     def to_dict(self):
         return {
             'id': self.id,
             'emoji': self.emoji,
             'label': self.label,
             'note': self.note,
-            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-            'date': self.date
+            'timestamp': self.timestamp.isoformat()
         }
 
 class JournalEntry(db.Model):
-    __tablename__ = 'journal_entries'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    content = db.Column(db.Text, nullable=False)
+    title = db.Column(db.String(200))
+    content = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    date = db.Column(db.String(50))
-
+    
     def to_dict(self):
         return {
             'id': self.id,
             'title': self.title,
             'content': self.content,
-            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-            'date': self.date
+            'timestamp': self.timestamp.isoformat()
         }
 
 class ChatbotResponse(db.Model):
-    __tablename__ = 'chatbot_responses'
     id = db.Column(db.Integer, primary_key=True)
-    user_query = db.Column(db.Text, nullable=False)
-    bot_response = db.Column(db.Text, nullable=False)
-    category = db.Column(db.String(100))
+    user_message = db.Column(db.Text)
+    bot_response = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
+    
     def to_dict(self):
         return {
             'id': self.id,
-            'user_query': self.user_query,
+            'user_message': self.user_message,
             'bot_response': self.bot_response,
-            'category': self.category,
-            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            'timestamp': self.timestamp.isoformat()
         }
 
 class FeedbackForm(db.Model):
-    __tablename__ = 'feedback_forms'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-    message = db.Column(db.Text, nullable=False)
-    rating = db.Column(db.Integer)  # 1-5 rating
+    name = db.Column(db.String(200))
+    email = db.Column(db.String(200))
+    feedback = db.Column(db.Text)
+    rating = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
+    
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
             'email': self.email,
-            'message': self.message,
+            'feedback': self.feedback,
             'rating': self.rating,
-            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            'timestamp': self.timestamp.isoformat()
         }
 
 class AppFeelingsForm(db.Model):
-    __tablename__ = 'app_feelings_forms'
     id = db.Column(db.Integer, primary_key=True)
-    helpful = db.Column(db.String(10))  # yes/no
-    favorite_feature = db.Column(db.String(100))
-    improve = db.Column(db.Text)
-    continue_using = db.Column(db.String(10))  # yes/no
+    app_name = db.Column(db.String(200))
+    features_used = db.Column(db.String(500))
+    feeling_about_app = db.Column(db.String(50))
+    improvement_suggestions = db.Column(db.Text)
+    would_recommend = db.Column(db.Boolean)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
+    
     def to_dict(self):
         return {
             'id': self.id,
-            'helpful': self.helpful,
-            'favorite_feature': self.favorite_feature,
-            'improve': self.improve,
-            'continue_using': self.continue_using,
-            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            'app_name': self.app_name,
+            'features_used': self.features_used,
+            'feeling_about_app': self.feeling_about_app,
+            'improvement_suggestions': self.improvement_suggestions,
+            'would_recommend': self.would_recommend,
+            'timestamp': self.timestamp.isoformat()
         }
 
-# ============ CHATBOT SETUP ============
+# ============ CHATBOT INITIALIZATION ============
 
 stemmer = LancasterStemmer()
-
-# Download nltk dependencies
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt')
-
-try:
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    nltk.download('stopwords')
-
+nltk.download('punkt', quiet=True)
+nltk.download('stopwords', quiet=True)
 from nltk.corpus import stopwords
 stop_words = stopwords.words('english')
 
 punct_dict = dict((ord(punct), None) for punct in string.punctuation)
 
-# Load and prepare data
+# Load and prepare chatbot data
 categories = []
 questions = []
 answers = []
 
-# Load training data
+# Load training data from aichatbot.txt
 try:
-    with open('backend/aichatbot.txt', 'r') as f:
+    with open("aichatbot.txt", "r") as f:
         while True:
             line = f.readline().strip()
             if not line:
@@ -150,10 +131,7 @@ try:
             questions.append(f.readline().lower().strip())
             answers.append(f.readline().lower().strip())
 except FileNotFoundError:
-    print("Warning: aichatbot.txt not found. Chatbot will not be available.")
-    categories = ['default']
-    questions = ['hello']
-    answers = ['hi there!']
+    print("Warning: aichatbot.txt not found. Chatbot will not work.")
 
 # Tokenize and remove stop words
 word_tokens_stop = []
@@ -168,7 +146,6 @@ for i, question in enumerate(questions):
 # Stem words
 stemmed_words = [stemmer.stem(w) for w in word_tokens_stop]
 stemmed_words = sorted(list(set(stemmed_words)))
-
 sorted_categories = sorted(list(set(categories)))
 
 # Prepare training data
@@ -188,25 +165,33 @@ for i, question in enumerate(questions_tokenized_stopped):
     training.append(training_row)
     output.append(output_row)
 
-training = np.array(training)
-output = np.array(output)
+if len(training) > 0:
+    training = np.array(training)
+    output = np.array(output)
 
-# Build the neural network
-input_size = len(training[0])
-output_size = len(output[0])
+    # Build the neural network
+    input_size = len(training[0])
+    output_size = len(output[0])
 
-model = tf.keras.Sequential([
-    tf.keras.layers.Input(shape=(input_size,)),
-    tf.keras.layers.Dense(8, activation='relu'),
-    tf.keras.layers.Dense(8, activation='relu'),
-    tf.keras.layers.Dense(output_size, activation='softmax')
-])
+    model = tf.keras.Sequential([
+        tf.keras.layers.Input(shape=(input_size,)),
+        tf.keras.layers.Dense(8, activation='relu'),
+        tf.keras.layers.Dense(8, activation='relu'),
+        tf.keras.layers.Dense(output_size, activation='softmax')
+    ])
 
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-model.fit(training, output, epochs=1000, batch_size=8, verbose=0)
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.fit(training, output, epochs=1000, batch_size=8, verbose=0)
+    print("✓ Chatbot model trained successfully!")
+else:
+    model = None
+    print("Warning: No training data found for chatbot.")
 
-# Function to process input and predict category
 def get_response(query):
+    """Process input and predict category"""
+    if model is None or len(stemmed_words) == 0:
+        return "Sorry, the chatbot is not ready. Please try again later."
+    
     row = [0] * len(stemmed_words)
     query = query.lower().translate(punct_dict)
     tokens = nltk.word_tokenize(query)
@@ -218,216 +203,222 @@ def get_response(query):
             if w == stemmed_word:
                 row[i] = 1
 
-    return np.array(row)
+    response = model.predict(np.array([row]), verbose=0)
+    results_index = np.argmax(response)
+    tag = sorted_categories[results_index]
+    
+    # Get random response from category
+    responses = [answers[i] for i, category in enumerate(categories) if category == tag]
+    if responses:
+        import random
+        return random.choice(responses)
+    else:
+        return "I'm not sure how to respond to that. Can you ask something else?"
 
-# ============ ROUTES ============
+# ============ API ROUTES ============
 
-@app.route('/api/health', methods=['GET'])
-def health():
-    return jsonify({'status': 'healthy'}), 200
-
-# ============ CHATBOT ROUTES ============
-
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    try:
-        data = request.json
-        user_query = data.get('query', '')
-
-        if not user_query:
-            return jsonify({'error': 'Query is required'}), 400
-
-        response_vector = get_response(user_query)
-        results = model.predict(np.array([response_vector]), verbose=0)
-        results_index = np.argmax(results)
-        tag = sorted_categories[results_index]
-
-        # Get random response from category
-        responses = [answers[i] for i, category in enumerate(categories) if category == tag]
-        bot_response = random.choice(responses)
-
-        # Save to database
-        chat_entry = ChatbotResponse(
-            user_query=user_query,
-            bot_response=bot_response,
-            category=tag
-        )
-        db.session.add(chat_entry)
-        db.session.commit()
-
-        return jsonify({
-            'response': bot_response,
-            'category': tag,
-            'confidence': float(results[0][results_index])
-        }), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/chat/history', methods=['GET'])
-def chat_history():
-    try:
-        history = ChatbotResponse.query.order_by(ChatbotResponse.timestamp.desc()).limit(50).all()
-        return jsonify([h.to_dict() for h in history]), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-# ============ MOOD TRACKER ROUTES ============
-
+# Mood Tracker Routes
 @app.route('/api/mood', methods=['POST'])
 def add_mood():
-    try:
-        data = request.json
-        mood_entry = MoodEntry(
-            emoji=data.get('emoji'),
-            label=data.get('label'),
-            note=data.get('note', ''),
-            date=data.get('date')
-        )
-        db.session.add(mood_entry)
-        db.session.commit()
-        return jsonify(mood_entry.to_dict()), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    """Add a new mood entry"""
+    data = request.json
+    mood_entry = MoodEntry(
+        emoji=data.get('emoji'),
+        label=data.get('label'),
+        note=data.get('note', '')
+    )
+    db.session.add(mood_entry)
+    db.session.commit()
+    return jsonify({'success': True, 'id': mood_entry.id}), 201
 
 @app.route('/api/mood', methods=['GET'])
 def get_moods():
-    try:
-        moods = MoodEntry.query.order_by(MoodEntry.timestamp.desc()).all()
-        return jsonify([m.to_dict() for m in moods]), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    """Get all mood entries"""
+    moods = MoodEntry.query.order_by(MoodEntry.timestamp.desc()).all()
+    return jsonify([mood.to_dict() for mood in moods]), 200
 
-# ============ JOURNAL ROUTES ============
+@app.route('/api/mood/<int:mood_id>', methods=['DELETE'])
+def delete_mood(mood_id):
+    """Delete a mood entry"""
+    mood = MoodEntry.query.get(mood_id)
+    if mood:
+        db.session.delete(mood)
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    return jsonify({'error': 'Not found'}), 404
 
+# Journal Routes
 @app.route('/api/journal', methods=['POST'])
 def add_journal():
-    try:
-        data = request.json
-        journal_entry = JournalEntry(
-            title=data.get('title'),
-            content=data.get('content'),
-            date=data.get('date')
-        )
-        db.session.add(journal_entry)
-        db.session.commit()
-        return jsonify(journal_entry.to_dict()), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    """Add a new journal entry"""
+    data = request.json
+    journal_entry = JournalEntry(
+        title=data.get('title'),
+        content=data.get('content')
+    )
+    db.session.add(journal_entry)
+    db.session.commit()
+    return jsonify({'success': True, 'id': journal_entry.id}), 201
 
 @app.route('/api/journal', methods=['GET'])
 def get_journal():
-    try:
-        entries = JournalEntry.query.order_by(JournalEntry.timestamp.desc()).all()
-        return jsonify([j.to_dict() for j in entries]), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    """Get all journal entries"""
+    entries = JournalEntry.query.order_by(JournalEntry.timestamp.desc()).all()
+    return jsonify([entry.to_dict() for entry in entries]), 200
 
-@app.route('/api/journal/<int:entry_id>', methods=['DELETE'])
-def delete_journal(entry_id):
-    try:
-        entry = JournalEntry.query.get(entry_id)
-        if not entry:
-            return jsonify({'error': 'Entry not found'}), 404
+@app.route('/api/journal/<int:journal_id>', methods=['DELETE'])
+def delete_journal(journal_id):
+    """Delete a journal entry"""
+    entry = JournalEntry.query.get(journal_id)
+    if entry:
         db.session.delete(entry)
         db.session.commit()
-        return jsonify({'message': 'Entry deleted'}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': True}), 200
+    return jsonify({'error': 'Not found'}), 404
 
-# ============ FEEDBACK FORM ROUTES ============
+# Chatbot Routes
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    """Send a message to the chatbot"""
+    data = request.json
+    user_message = data.get('message', '')
+    
+    if not user_message:
+        return jsonify({'error': 'Empty message'}), 400
+    
+    # Get bot response
+    bot_response = get_response(user_message)
+    
+    # Save to database
+    chat_entry = ChatbotResponse(
+        user_message=user_message,
+        bot_response=bot_response
+    )
+    db.session.add(chat_entry)
+    db.session.commit()
+    
+    return jsonify({
+        'user_message': user_message,
+        'bot_response': bot_response,
+        'id': chat_entry.id
+    }), 200
 
-@app.route('/api/feedback', methods=['POST'])
-def submit_feedback():
-    try:
-        data = request.json
-        feedback = FeedbackForm(
-            name=data.get('name'),
-            email=data.get('email'),
-            message=data.get('message'),
-            rating=data.get('rating')
-        )
-        db.session.add(feedback)
+@app.route('/api/chat/history', methods=['GET'])
+def get_chat_history():
+    """Get chat history"""
+    chats = ChatbotResponse.query.order_by(ChatbotResponse.timestamp.asc()).all()
+    return jsonify([chat.to_dict() for chat in chats]), 200
+
+@app.route('/api/chat/<int:chat_id>', methods=['DELETE'])
+def delete_chat(chat_id):
+    """Delete a chat entry"""
+    chat = ChatbotResponse.query.get(chat_id)
+    if chat:
+        db.session.delete(chat)
         db.session.commit()
-        return jsonify(feedback.to_dict()), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': True}), 200
+    return jsonify({'error': 'Not found'}), 404
+
+# Feedback Routes
+@app.route('/api/feedback', methods=['POST'])
+def add_feedback():
+    """Add feedback form"""
+    data = request.json
+    feedback = FeedbackForm(
+        name=data.get('name'),
+        email=data.get('email'),
+        feedback=data.get('feedback'),
+        rating=data.get('rating', 0)
+    )
+    db.session.add(feedback)
+    db.session.commit()
+    return jsonify({'success': True, 'id': feedback.id}), 201
 
 @app.route('/api/feedback', methods=['GET'])
 def get_feedback():
-    try:
-        feedbacks = FeedbackForm.query.order_by(FeedbackForm.timestamp.desc()).all()
-        return jsonify([f.to_dict() for f in feedbacks]), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    """Get all feedback"""
+    feedback_entries = FeedbackForm.query.order_by(FeedbackForm.timestamp.desc()).all()
+    return jsonify([f.to_dict() for f in feedback_entries]), 200
 
-# ============ APP FEELINGS FORM ROUTES ============
-
-@app.route('/api/app-feelings', methods=['POST'])
-def submit_app_feelings():
-    try:
-        data = request.json
-        form = AppFeelingsForm(
-            helpful=data.get('helpful'),
-            favorite_feature=data.get('favorite_feature'),
-            improve=data.get('improve'),
-            continue_using=data.get('continue_using')
-        )
-        db.session.add(form)
+@app.route('/api/feedback/<int:feedback_id>', methods=['DELETE'])
+def delete_feedback(feedback_id):
+    """Delete feedback"""
+    feedback = FeedbackForm.query.get(feedback_id)
+    if feedback:
+        db.session.delete(feedback)
         db.session.commit()
-        return jsonify(form.to_dict()), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': True}), 200
+    return jsonify({'error': 'Not found'}), 404
+
+# App Feelings Routes
+@app.route('/api/app-feelings', methods=['POST'])
+def add_app_feelings():
+    """Add app feelings form"""
+    data = request.json
+    app_feelings = AppFeelingsForm(
+        app_name=data.get('app_name'),
+        features_used=data.get('features_used'),
+        feeling_about_app=data.get('feeling_about_app'),
+        improvement_suggestions=data.get('improvement_suggestions'),
+        would_recommend=data.get('would_recommend', False)
+    )
+    db.session.add(app_feelings)
+    db.session.commit()
+    return jsonify({'success': True, 'id': app_feelings.id}), 201
 
 @app.route('/api/app-feelings', methods=['GET'])
 def get_app_feelings():
-    try:
-        forms = AppFeelingsForm.query.order_by(AppFeelingsForm.timestamp.desc()).all()
-        return jsonify([f.to_dict() for f in forms]), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    """Get all app feelings"""
+    feelings = AppFeelingsForm.query.order_by(AppFeelingsForm.timestamp.desc()).all()
+    return jsonify([f.to_dict() for f in feelings]), 200
 
-# ============ STATISTICS ROUTES ============
+@app.route('/api/app-feelings/<int:feelings_id>', methods=['DELETE'])
+def delete_app_feelings(feelings_id):
+    """Delete app feelings"""
+    feelings = AppFeelingsForm.query.get(feelings_id)
+    if feelings:
+        db.session.delete(feelings)
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    return jsonify({'error': 'Not found'}), 404
 
-@app.route('/api/stats/mood-distribution', methods=['GET'])
-def mood_distribution():
-    try:
-        moods = MoodEntry.query.all()
-        distribution = {}
-        for mood in moods:
-            distribution[mood.label] = distribution.get(mood.label, 0) + 1
-        return jsonify(distribution), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
+# Statistics Routes
 @app.route('/api/stats/dashboard', methods=['GET'])
-def dashboard_stats():
-    try:
-        total_moods = MoodEntry.query.count()
-        total_journals = JournalEntry.query.count()
-        total_chats = ChatbotResponse.query.count()
-        total_feedback = FeedbackForm.query.count()
+def get_stats():
+    """Get dashboard statistics"""
+    mood_count = MoodEntry.query.count()
+    journal_count = JournalEntry.query.count()
+    chat_count = ChatbotResponse.query.count()
+    feedback_count = FeedbackForm.query.count()
+    
+    # Most common mood
+    common_mood = None
+    if mood_count > 0:
+        moods = db.session.query(MoodEntry.label).all()
+        mood_labels = [m[0] for m in moods]
+        from collections import Counter
+        mood_counts = Counter(mood_labels)
+        common_mood = mood_counts.most_common(1)[0][0]
+    
+    return jsonify({
+        'total_moods': mood_count,
+        'total_journals': journal_count,
+        'total_chats': chat_count,
+        'total_feedback': feedback_count,
+        'most_common_mood': common_mood
+    }), 200
 
-        return jsonify({
-            'total_mood_entries': total_moods,
-            'total_journal_entries': total_journals,
-            'total_chat_messages': total_chats,
-            'total_feedback_forms': total_feedback
-        }), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+# Health check
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint"""
+    return jsonify({'status': 'ok'}), 200
 
-# ============ DATABASE INITIALIZATION ============
-
-@app.route('/api/init-db', methods=['POST'])
-def init_db():
-    try:
-        db.create_all()
-        return jsonify({'message': 'Database initialized'}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+# ============ CREATE DATABASE AND RUN ============
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        print("✓ Database initialized!")
+    
     app.run(debug=True, port=5000)
